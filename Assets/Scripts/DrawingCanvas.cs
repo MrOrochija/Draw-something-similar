@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 
 public class DrawingCanvas : MonoBehaviour, IDragHandler, IPointerDownHandler, IPointerUpHandler
 {
-    public enum ToolType { Pencil, Eraser, Fill }
+    public enum ToolType { None, Pencil, Eraser, Fill }
 
     public int textureWidth = 512;
     public int textureHeight = 512;
@@ -17,11 +17,20 @@ public class DrawingCanvas : MonoBehaviour, IDragHandler, IPointerDownHandler, I
     public Toggle eraserToggle;
     public Toggle fillToggle;
 
+    public Texture2D pencilCursor;
+    public Vector2 pencilHotspot = Vector2.zero;
+    
+    public Texture2D eraserCursor;
+    public Vector2 eraserHotspot = Vector2.zero;
+    
+    public Texture2D fillCursor;
+    public Vector2 fillHotspot = Vector2.zero;
+
     private RawImage targetImage;
     private Texture2D drawingTexture;
     private Color32[] pixels;
     
-    private ToolType currentTool = ToolType.Pencil;
+    private ToolType currentTool = ToolType.None; 
 
     private Vector2Int lastPos = new Vector2Int(-1, -1); 
 
@@ -34,28 +43,64 @@ public class DrawingCanvas : MonoBehaviour, IDragHandler, IPointerDownHandler, I
         ClearCanvas(eraserColor);
         targetImage.texture = drawingTexture;
 
-        pencilToggle.onValueChanged.AddListener(isOn => { if (isOn) SelectTool(ToolType.Pencil); });
-        eraserToggle.onValueChanged.AddListener(isOn => { if (isOn) SelectTool(ToolType.Eraser); });
-        fillToggle.onValueChanged.AddListener(isOn => { if (isOn) SelectTool(ToolType.Fill); });
+        pencilToggle.onValueChanged.AddListener(isOn => { 
+            if (isOn) SelectTool(ToolType.Pencil); 
+            else if (currentTool == ToolType.Pencil) SelectTool(ToolType.None); 
+        });
+        
+        eraserToggle.onValueChanged.AddListener(isOn => { 
+            if (isOn) SelectTool(ToolType.Eraser); 
+            else if (currentTool == ToolType.Eraser) SelectTool(ToolType.None); 
+        });
+        
+        fillToggle.onValueChanged.AddListener(isOn => { 
+            if (isOn) SelectTool(ToolType.Fill); 
+            else if (currentTool == ToolType.Fill) SelectTool(ToolType.None); 
+        });
 
-        SelectTool(ToolType.Pencil);
+        SelectTool(ToolType.None);
     }
 
     public void SelectTool(ToolType tool)
     {
         currentTool = tool;
+        
         pencilToggle.SetIsOnWithoutNotify(tool == ToolType.Pencil);
         eraserToggle.SetIsOnWithoutNotify(tool == ToolType.Eraser);
         fillToggle.SetIsOnWithoutNotify(tool == ToolType.Fill);
+
+        UpdateCursor();
+    }
+
+    private void UpdateCursor()
+    {
+        switch (currentTool)
+        {
+            case ToolType.Pencil:
+                Cursor.SetCursor(pencilCursor, pencilHotspot, CursorMode.Auto);
+                break;
+            case ToolType.Eraser:
+                Cursor.SetCursor(eraserCursor, eraserHotspot, CursorMode.Auto);
+                break;
+            case ToolType.Fill:
+                Cursor.SetCursor(fillCursor, fillHotspot, CursorMode.Auto);
+                break;
+            case ToolType.None:
+            default:
+                Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+                break;
+        }
     }
 
     public void OnPointerDown(PointerEventData eventData)
     {
+        if (currentTool == ToolType.None) return; 
         ProcessInput(eventData, isClick: true);
     }
 
     public void OnDrag(PointerEventData eventData)
     {
+        if (currentTool == ToolType.None) return;
         ProcessInput(eventData, isClick: false);
     }
 
