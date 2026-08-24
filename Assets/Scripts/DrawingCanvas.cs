@@ -7,6 +7,8 @@ public class DrawingCanvas : MonoBehaviour, IDragHandler, IPointerDownHandler, I
 {
     public enum ToolType { None, Pencil, Eraser, Fill }
 
+    private bool active = false;
+
     public int textureWidth = 512;
     public int textureHeight = 512;
     public Color brushColor = Color.black;
@@ -31,8 +33,9 @@ public class DrawingCanvas : MonoBehaviour, IDragHandler, IPointerDownHandler, I
     private Color32[] pixels;
     
     private ToolType currentTool = ToolType.None; 
-
     private Vector2Int lastPos = new Vector2Int(-1, -1); 
+
+    public List<Vector2> currentStroke = new List<Vector2>();
 
     void Start()
     {
@@ -74,6 +77,12 @@ public class DrawingCanvas : MonoBehaviour, IDragHandler, IPointerDownHandler, I
 
     private void UpdateCursor()
     {
+        if (!active)
+        {
+            Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+            return;
+        }
+
         switch (currentTool)
         {
             case ToolType.Pencil:
@@ -92,15 +101,27 @@ public class DrawingCanvas : MonoBehaviour, IDragHandler, IPointerDownHandler, I
         }
     }
 
+    public void SetActive(bool isActive)
+    {
+        active = isActive;
+        UpdateCursor();
+    }
+
     public void OnPointerDown(PointerEventData eventData)
     {
-        if (currentTool == ToolType.None) return; 
+        if (!active || currentTool == ToolType.None) return; 
+
+        if (currentTool == ToolType.Pencil)
+        {
+            currentStroke.Clear();
+        }
+
         ProcessInput(eventData, isClick: true);
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        if (currentTool == ToolType.None) return;
+        if (!active || currentTool == ToolType.None) return;
         ProcessInput(eventData, isClick: false);
     }
 
@@ -132,6 +153,11 @@ public class DrawingCanvas : MonoBehaviour, IDragHandler, IPointerDownHandler, I
         int x = Mathf.RoundToInt(normalizedX * textureWidth);
         int y = Mathf.RoundToInt(normalizedY * textureHeight);
         Vector2Int currentPos = new Vector2Int(x, y);
+
+        if (currentTool == ToolType.Pencil)
+        {
+            currentStroke.Add(new Vector2(normalizedX, normalizedY));
+        }
 
         if (currentTool == ToolType.Fill)
         {
