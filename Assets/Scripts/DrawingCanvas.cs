@@ -3,7 +3,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-public class DrawingCanvas : MonoBehaviour, IDragHandler, IPointerDownHandler, IPointerUpHandler
+[RequireComponent(typeof(AudioSource))]
+public class DrawingCanvas : SoundsModule, IDragHandler, IPointerDownHandler, IPointerUpHandler
 {
     public enum ToolType { None, Pencil, Eraser, Fill }
 
@@ -66,6 +67,11 @@ public class DrawingCanvas : MonoBehaviour, IDragHandler, IPointerDownHandler, I
 
     public void SelectTool(ToolType tool)
     {
+        if (tool != ToolType.None && currentTool != tool && sounds.Length > 0)
+        {
+            PlaySound(sounds[0]); 
+        }
+
         currentTool = tool;
         
         pencilToggle.SetIsOnWithoutNotify(tool == ToolType.Pencil);
@@ -128,6 +134,8 @@ public class DrawingCanvas : MonoBehaviour, IDragHandler, IPointerDownHandler, I
     public void OnPointerUp(PointerEventData eventData)
     {
         lastPos = new Vector2Int(-1, -1);
+        
+        StopSound();
     }
 
     void ProcessInput(PointerEventData eventData, bool isClick)
@@ -147,6 +155,7 @@ public class DrawingCanvas : MonoBehaviour, IDragHandler, IPointerDownHandler, I
         if (normalizedX < 0f || normalizedX > 1f || normalizedY < 0f || normalizedY > 1f)
         {
             lastPos = new Vector2Int(-1, -1);
+            StopSound();
             return;
         }
 
@@ -161,10 +170,19 @@ public class DrawingCanvas : MonoBehaviour, IDragHandler, IPointerDownHandler, I
 
         if (currentTool == ToolType.Fill)
         {
-            if (isClick) FloodFill(x, y);
+            if (isClick)
+            {
+                if (sounds.Length > 3) PlaySound(sounds[3]); 
+                FloodFill(x, y);
+            }
         }
         else
         {
+            if (currentTool == ToolType.Pencil && sounds.Length > 1) 
+                PlaySequentialSound(sounds[1], 0.7f, 0.85f, 1.15f);
+            else if (currentTool == ToolType.Eraser && sounds.Length > 2) 
+                PlaySequentialSound(sounds[2], 0.7f, 0.85f, 1.15f);
+
             Color32 activeColor = currentTool == ToolType.Eraser ? eraserColor : brushColor;
 
             if (isClick || lastPos.x == -1)

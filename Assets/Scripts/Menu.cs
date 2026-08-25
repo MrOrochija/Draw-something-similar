@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 using System.Collections;
 
-public class Menu : MonoBehaviour
+public class Menu : SoundsModule
 {
     public DrawingCanvas drawing;
     public LevelManager levelManager;
@@ -16,6 +16,7 @@ public class Menu : MonoBehaviour
 
     private void Start()
     {
+        PlayLoopSound(sounds[0], 0.5f);
         ClearText3();
     }
 

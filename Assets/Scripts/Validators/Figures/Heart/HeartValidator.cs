@@ -25,27 +25,27 @@ public class HeartValidator : ShapeValidator
 
         float endDistance = Vector2.Distance(drawnPoints[0], drawnPoints[drawnPoints.Count - 1]);
         float maxDim = Mathf.Max(width, height);
-        float closureScore = Mathf.Clamp01(1f - (endDistance / (maxDim * 0.35f)));
+        float closureScore = Mathf.Clamp01(1f - (endDistance / (maxDim * 0.4f)));
 
-        float topDipY = float.MaxValue;
         float leftPeakY = float.MinValue;
         float rightPeakY = float.MinValue;
+        float topDipY = float.MinValue; 
         float bottomTipY = float.MaxValue;
-        float bottomTipX = 0f;
+        float bottomTipX = 0.5f;
 
         foreach (Vector2 p in drawnPoints)
         {
             float normX = (p.x - minX) / width;
             float normY = (p.y - minY) / height;
 
-            if (normX >= 0.1f && normX <= 0.45f)
+            if (normX >= 0.05f && normX <= 0.45f)
                 leftPeakY = Mathf.Max(leftPeakY, normY);
 
-            if (normX >= 0.55f && normX <= 0.9f)
+            if (normX >= 0.55f && normX <= 0.95f)
                 rightPeakY = Mathf.Max(rightPeakY, normY);
 
-            if (normX >= 0.35f && normX <= 0.65f && normY > 0.3f)
-                topDipY = Mathf.Min(topDipY, normY);
+            if (normX >= 0.38f && normX <= 0.62f)
+                topDipY = Mathf.Max(topDipY, normY);
 
             if (normY < bottomTipY)
             {
@@ -54,18 +54,19 @@ public class HeartValidator : ShapeValidator
             }
         }
 
-        if (topDipY == float.MaxValue || leftPeakY == float.MinValue || rightPeakY == float.MinValue)
+        if (leftPeakY == float.MinValue || rightPeakY == float.MinValue || topDipY == float.MinValue)
             return 0f;
 
         float minPeak = Mathf.Min(leftPeakY, rightPeakY);
+        
         float dipDepth = minPeak - topDipY; 
-        float dipScore = Mathf.Clamp01(dipDepth / 0.12f);
+        float dipScore = Mathf.Clamp01(dipDepth / 0.10f);
 
-        float bottomCenterScore = Mathf.Clamp01(1f - (Mathf.Abs(bottomTipX - 0.5f) / 0.25f));
+        float bottomCenterScore = Mathf.Clamp01(1f - (Mathf.Abs(bottomTipX - 0.5f) / 0.3f));
 
-        float symmetryScore = Mathf.Clamp01(1f - (Mathf.Abs(leftPeakY - rightPeakY) / 0.25f));
+        float symmetryScore = Mathf.Clamp01(1f - (Mathf.Abs(leftPeakY - rightPeakY) / 0.3f));
 
-        float shapeScore = (dipScore * 0.4f) + (bottomCenterScore * 0.35f) + (symmetryScore * 0.25f);
+        float shapeScore = (dipScore * 0.45f) + (bottomCenterScore * 0.30f) + (symmetryScore * 0.25f);
         float finalScore = (shapeScore * 0.75f) + (closureScore * 0.25f);
 
         return Mathf.Clamp(finalScore * 100f, 0f, 100f);
