@@ -9,8 +9,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2b3e8c66780f3934ea861ebfea8974e0, type: 3}
-  m_Name: FigureSquare
-  m_EditorClassIdentifier: Assembly-CSharp::Figure
-  figureName: Square
-  validator: {fileID: 11400000, guid: 5e3c65c851e126b4299a484821287620, type: 2}
+  m_Script: {fileID: 11500000, guid: d7bf1de6ad50ce54f953a1812fb54182, type: 3}
+  m_Name: HeartValidator
+  m_EditorClassIdentifier: Assembly-CSharp::HeartValidator

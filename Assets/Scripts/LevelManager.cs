@@ -17,6 +17,23 @@ public class LevelManager : MonoBehaviour
     private Figure currentTargetFigure; 
     private int currentTargetIndex = -1;
 
+    public bool HasActiveFigures()
+    {
+        for (int i = 0; i < allFigures.Length; i++)
+        {
+            if (allFigures[i].active) return true;
+        }
+        return false;
+    }
+
+    public void ResetAllFigures()
+    {
+        for (int i = 0; i < allFigures.Length; i++)
+        {
+            allFigures[i].active = true;
+        }
+    }
+
     public void PickRandomFigure()
     {
         if (allFigures.Length == 0) return;
